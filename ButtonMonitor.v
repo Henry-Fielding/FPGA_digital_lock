@@ -56,6 +56,9 @@ always @ (posedge clock or posedge reset) begin
 					state = HIGH_STATE;
 				end
 			end
+			
+			default state <= LOW_STATE;
+			
 		endcase
 	end
 end

@@ -33,7 +33,59 @@ buttonMonitor buttonMonitor_dut (
 
 // Define test regime
 initial begin
-
+	$monitor("%d ns \t clock = %b \t reset = %b \t button = %b \t buttonEdge = %b", $time, clock, reset, button, buttonEdge);
+	
+	reset = 1'b1;
+	clock = 1'b0;
+	button = 1'b0;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	
+	reset = 1'b0;
+	button = 1'b1;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	
+	button = 1'b0;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	
+	button = 1'b1;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	
 end 
 
 endmodule 
