@@ -8,8 +8,8 @@
 //------------
 //Detects the rising edge of the button press and outputs 1 clock cycle.
 
-// declare module
 module buttonMonitor (
+	// port list
 	input clock,
 	input reset,
 	
