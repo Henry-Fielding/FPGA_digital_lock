@@ -19,8 +19,6 @@ reg button;
 // DUT output signals
 wire buttonEdge;
 
-// local variables
-
 // instantiate DUT
 buttonMonitor buttonMonitor_dut (
 	.clock			(clock		),
