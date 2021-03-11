@@ -28,7 +28,8 @@ localparam BUTTON3_STATE = 3'd0;
 // define state machine outputs and transitions
 always @ (posedge clock or posedge reset) begin
 	if (reset) begin
-		
+		state <= IDLE_STATE;
+		buttonPresses <= 4'b0;
 	end else begin
 	
 	
