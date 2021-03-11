@@ -64,4 +64,5 @@ set_global_assignment -name EDA_TEST_BENCH_NAME buttonMonitor_tb -section_id eda
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id buttonMonitor_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME buttonMonitor_tb -section_id buttonMonitor_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE buttonMonitor_tb.v -section_id buttonMonitor_tb
+set_global_assignment -name VERILOG_FILE buttonMonitorNBit.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
