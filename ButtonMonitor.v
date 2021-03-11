@@ -6,7 +6,7 @@
 //
 //Description
 //------------
-//Detects the rising edge of the button press and outputs 1 clock cycle, .
+//Detects the rising edge of the button press and outputs 1 clock cycle.
 
 // declare module
 module buttonMonitor (
