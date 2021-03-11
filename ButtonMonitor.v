@@ -15,9 +15,24 @@ module buttonMonitor (
 	output reg [3:0] buttonPresses
 );
 
-// state machine outputs and transitions
-always @ (posedge clock or posedge reset) begin
+// declare state-machine register
+reg [2:0] state;
 
+// define state names
+localparam IDLE_STATE = 3'd0;
+localparam BUTTON0_STATE = 3'd0;
+localparam BUTTON1_STATE = 3'd0;
+localparam BUTTON2_STATE = 3'd0;
+localparam BUTTON3_STATE = 3'd0;
+
+// define state machine outputs and transitions
+always @ (posedge clock or posedge reset) begin
+	if (reset) begin
+		
+	end else begin
+	
+	
+	end
 end
 
 endmodule
