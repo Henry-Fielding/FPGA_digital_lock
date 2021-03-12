@@ -24,7 +24,7 @@ reg [WIDTH-1:0] buttons;
 wire [WIDTH-1:0]buttonEdge;
 
 // instantiate DUT
-buttonMonitor #(
+buttonMonitorNBit #(
 	.WIDTH	(WIDTH	) 
 
 ) buttonMonitorNBit_dut (
@@ -36,8 +36,36 @@ buttonMonitor #(
 	.buttonEdge		(buttonEdge	)
 );
 
+// define testbench variables
+integer i;
+
 // Define test regime
 initial begin
+	$monitor("%d ns \t clock = %b \t reset = %b \t buttons = %b \t buttonEdge = %b", $time, clock, reset, buttons, buttonEdge);
+	
+	reset = 1'b1;
+	clock = 1'b0;
+	buttons = 4'b0;
+	#10
+	clock = !clock;
+	#10
+	clock = !clock;
+	
+	reset = 1'b0;
+	
+	for (i = 0; i <= 3; i = i + 1) begin
+		buttons = 4'b1 << i;
+		#10
+		clock = !clock;
+		#10
+		clock = !clock;
+		#10
+		clock = !clock;
+		#10
+		clock = !clock;
+	end 
+	
+
 
 end
 
