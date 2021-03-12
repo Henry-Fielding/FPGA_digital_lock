@@ -18,10 +18,10 @@ localparam WIDTH = 4;
 // testbench generated signals
 reg clock;
 reg reset;
-reg [WIDTH-1:0] buttons;
+reg [WIDTH-1:0] key;
 
 // DUT output signals
-wire [WIDTH-1:0]buttonEdge;
+wire [WIDTH-1:0]keyEdge;
 
 // instantiate DUT
 buttonMonitorNBit #(
@@ -31,9 +31,9 @@ buttonMonitorNBit #(
 	.clock			(clock		),
 	.reset			(reset		),
 	
-	.buttonPress	(buttons		),
+	.key				(key			),
 	
-	.buttonEdge		(buttonEdge	)
+	.keyEdge			(keyEdge		)
 );
 
 // define testbench variables
@@ -41,11 +41,11 @@ integer i;
 
 // Define test regime
 initial begin
-	$monitor("%d ns \t clock = %b \t reset = %b \t buttons = %b \t buttonEdge = %b", $time, clock, reset, buttons, buttonEdge);
+	$monitor("%d ns \t clock = %b \t reset = %b \t key = %b \t keyEdge = %b", $time, clock, reset, key, keyEdge);
 	
 	reset = 1'b1;
 	clock = 1'b0;
-	buttons = 4'b0;
+	key = 4'b0;
 	#10
 	clock = !clock;
 	#10
@@ -54,7 +54,7 @@ initial begin
 	reset = 1'b0;
 	
 	for (i = 0; i <= 3; i = i + 1) begin
-		buttons = 4'b1 << i;
+		key = 4'b1 << i;
 		#10
 		clock = !clock;
 		#10
@@ -64,8 +64,6 @@ initial begin
 		#10
 		clock = !clock;
 	end 
-	
-
 
 end
 

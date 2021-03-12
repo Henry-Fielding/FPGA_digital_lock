@@ -13,9 +13,9 @@ module buttonMonitor (
 	input clock,
 	input reset,
 	
-	input buttonPress,
+	input key,
 	
-	output reg buttonEdge
+	output reg keyEdge
 );
 
 // declare state-machine register
@@ -28,31 +28,31 @@ localparam HIGH_STATE = 1'b1;
 // define state machine outputs and transitions
 always @ (posedge clock or posedge reset) begin
 	if (reset) begin
-		buttonEdge <= 1'b0;
+		keyEdge <= 1'b0;
 		state <= LOW_STATE;
 	end else begin
 		case (state)
 			LOW_STATE: begin
 				// wait in low state until button pressed
-				if (buttonPress) begin
+				if (key) begin
 					// when button pressed move to high state and 
-					// set buttonedge high for 1 clock cycle
-					buttonEdge <= 1'b1;
+					// set keyEdge high for 1 clock cycle
+					keyEdge <= 1'b1;
 					state = HIGH_STATE;
 				end else begin 
-					buttonEdge <= 1'b0;
+					keyEdge <= 1'b0;
 					state = LOW_STATE;
 				end
 			end
 			
 			HIGH_STATE: begin
 				// wait in high state until button released
-				if (!buttonPress) begin
+				if (!key) begin
 					// if button released return to low state
-					buttonEdge <= 1'b0;
+					keyEdge <= 1'b0;
 					state = LOW_STATE;
 				end else begin 
-					buttonEdge <= 1'b0;
+					keyEdge <= 1'b0;
 					state = HIGH_STATE;
 				end
 			end

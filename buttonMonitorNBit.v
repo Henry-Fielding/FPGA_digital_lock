@@ -16,9 +16,9 @@ module buttonMonitorNBit #(
 	input clock,
 	input reset,
 	
-	input [WIDTH-1:0] buttonPress,
+	input [WIDTH-1:0] key,
 	
-	output [WIDTH-1:0] buttonEdge
+	output [WIDTH-1:0] keyEdge
 );
 
 // declare loop variable
@@ -32,9 +32,9 @@ generate
 			.clock			(clock	),
 			.reset			(reset	),
 	
-			.buttonPress	(buttonPress[i]),
+			.key	(key[i]),
 	
-			.buttonEdge		(buttonEdge[i]	)
+			.keyEdge		(keyEdge[i]	)
 		);
 	
 	end
