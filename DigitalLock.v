@@ -11,9 +11,9 @@
 
 module digitalLock #(
 	// declare parameters
-	parameter DIGITS = 4, // number of digits in unlock code
-	parameter CODE_LENGTH = 4*DIGITS, // bits required to store unlock code
-	parameter COUNTER_WIDTH =  $clog2(DIGITS)
+	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
+	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH, // bits required to store unlock code
+	parameter COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH)
 )(
 	// declare ports
 	input clock,
@@ -31,13 +31,19 @@ module digitalLock #(
 
 );
 
-	//input [CODE_LENGTH-1:0] pinCode;
-	//output reg [CODE_LENGTH-1:0] pinEntry;
-	//output reg [COUNTER_WIDTH:0] digitCounter;
-	
-	
-	
-	
+//
+// local registers
+//	
+reg [COUNTER_WIDTH-1:0] entryLength;
+reg [PASSCODE_WIDTH-1:0] userEntry1;
+reg [PASSCODE_WIDTH-1:0] userEntry2;
+reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'hFFFF;
+
+//
+// local parameters
+//
+localparam ZERO_COUNTER = {PASSCODE_WIDTH{1'b0}};
+localparam ZERO_ENTRY = {COUNTER_WIDTH{1'b0}};
 	
 //
 // Declare statemachine registers and statenames	
@@ -138,18 +144,37 @@ endtask
 task locked_sub_statemachine () ;
 	case (state_locked)
 		READ_LOCKED: begin
-			state_locked <= state_locked + 1'b1;
+			if (entryLength ==  PASSCODE_LENGTH) begin
+				// if all digits have been entered move to Check state
+				state_locked <= CHECK_LOCKED;
+				
+			end else if (key) begin
+				// if a key is pressed shift in into the register in the 4 LSB
+				userEntry1 = {userEntry1[PASSCODE_WIDTH-5:0], key};
+				entryLength <= entryLength + 1'b1;
+				state_locked <= READ_LOCKED;
+				
+			end else begin
+				state_locked <= READ_LOCKED;
+			end
 		end 
 		
 		CHECK_LOCKED : begin
-			state_locked <= state_locked + 1'b1;
+			if (userEntry1 == savedPasscode) begin
+				state_locked <= UNLOCK_LOCKED;
+			end else begin 
+				state_locked <= CLEAR_LOCKED;
+			end
 		end 
 		
 		UNLOCK_LOCKED : begin
-			state_locked <= state_locked + 1'b1;
+			state_locked <= CLEAR_LOCKED;
 		end 
 		
 		CLEAR_UNLOCKED : begin
+			entryLength <= ZERO_COUNTER;
+			userEntry1 <= ZERO_ENTRY;
+			
 			state_locked <= READ_LOCKED;
 		end 
 
