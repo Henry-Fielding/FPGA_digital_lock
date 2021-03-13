@@ -51,7 +51,7 @@ clock = !clock;
 #10
 clock = !clock;
 
-reset = 0'b0;
+reset = 1'b0;
 
 $monitor("%d ns \t clock = %b \t reset = %b \t key = %b \t locked = %b \t state_top = %d \t state_sub = %b", $time, clock, reset, key, locked, test1, test2);
 	for(i = 0; i < 40; i = i + 1) begin
