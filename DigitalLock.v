@@ -13,7 +13,7 @@ module digitalLock #(
 	// declare parameters
 	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
 	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH, // bits required to store unlock code
-	parameter COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH)
+	parameter COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH + 1)
 )(
 	// declare ports
 	input clock,
@@ -25,6 +25,8 @@ module digitalLock #(
 	output reg locked,
 	
 	// testing outputs
+	output [PASSCODE_WIDTH-1:0] entry1,
+	output [COUNTER_WIDTH-1:0] entry_counter,
 	output state,
 	output [2:0] substate_unlocked,
 	output [1:0] substate_locked
@@ -37,13 +39,13 @@ module digitalLock #(
 reg [COUNTER_WIDTH-1:0] entryLength;
 reg [PASSCODE_WIDTH-1:0] userEntry1;
 reg [PASSCODE_WIDTH-1:0] userEntry2;
-reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'hFFFF;
+reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'h8148;
 
 //
 // local parameters
 //
-localparam ZERO_COUNTER = {PASSCODE_WIDTH{1'b0}};
-localparam ZERO_ENTRY = {COUNTER_WIDTH{1'b0}};
+localparam ZERO_COUNTER = {COUNTER_WIDTH{1'b0}};
+localparam ZERO_ENTRY = {PASSCODE_WIDTH{1'b0}};
 	
 //
 // Declare statemachine registers and statenames	
@@ -171,14 +173,14 @@ task locked_sub_statemachine () ;
 			state_locked <= CLEAR_LOCKED;
 		end 
 		
-		CLEAR_UNLOCKED : begin
+		CLEAR_LOCKED : begin
 			entryLength <= ZERO_COUNTER;
 			userEntry1 <= ZERO_ENTRY;
 			
 			state_locked <= READ_LOCKED;
 		end 
 
-		default state_locked <= READ_LOCKED;
+		default state_locked <= CLEAR_LOCKED;
 	
 	endcase
 
@@ -189,6 +191,7 @@ endtask
 assign state = state_toplevel;
 assign substate_unlocked = state_unlocked;
 assign substate_locked = state_locked;
-
+assign entry1 = userEntry1;
+assign entry_counter = entryLength;
 
 endmodule 
