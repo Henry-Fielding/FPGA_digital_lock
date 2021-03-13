@@ -22,8 +22,10 @@ reg [3:0] key;
 
 // DUT output signals
 wire locked;
-wire test1;
-wire test2;
+
+wire state;
+wire [2:0] substate_unlocked;
+wire [1:0] substate_locked;
 
 digitalLock #(
 	.DIGITS	(DIGITS	)
@@ -36,8 +38,11 @@ digitalLock #(
 
 	
 	.locked	(locked	),
-	.test1	(test1	),
-	.test2	(test2	)
+	
+	.state	(state),
+	.substate_unlocked	(substate_unlocked),
+	.substate_locked		(substate_locked)
+
 );
 
 //test bench variables 
@@ -53,7 +58,7 @@ clock = !clock;
 
 reset = 1'b0;
 
-$monitor("%d ns \t clock = %b \t reset = %b \t key = %b \t locked = %b \t state_top = %d \t state_sub = %b", $time, clock, reset, key, locked, test1, test2);
+$monitor("%d ns \t clock = %b \t reset = %b \t key = %b \t locked = %b \t state = %d \t state unlocked = %d, state locked = %d", $time, clock, reset, key, locked, state, substate_unlocked, substate_locked);
 	for(i = 0; i < 40; i = i + 1) begin
 		#10
 		clock = !clock;

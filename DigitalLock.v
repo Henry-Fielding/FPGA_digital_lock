@@ -52,8 +52,9 @@ reg [2:0] state_unlocked;
 localparam READ1_UNLOCKED = 3'd0;
 localparam READ2_UNLOCKED = 3'd1;
 localparam CHECK_UNLOCKED = 3'd2;
-localparam CLEAR_UNLOCKED = 3'd3;
-localparam LOCK_UNLOCKED = 3'd4;
+localparam LOCK_UNLOCKED = 3'd3;
+localparam CLEAR_UNLOCKED = 3'd4;
+
 
 // declare state register and statenames for the locked state sub-statemachine
 reg [1:0] state_locked;
@@ -77,6 +78,7 @@ always @(posedge clock or posedge reset) begin
 				
 				unlocked_sub_statemachine(); // call the locked state sub-statemachine
 				if (state_unlocked == LOCK_UNLOCKED) begin // move to locked state if substatemachine reaches lock state
+					locked <= 1;
 					state_toplevel <= LOCKED_TOPLEVEL;
 				end
 			end
@@ -86,6 +88,7 @@ always @(posedge clock or posedge reset) begin
 				
 				locked_sub_statemachine(); // call the locked state sub-statemachine
 				if (state_locked == UNLOCK_LOCKED) begin // move to unlocked state if substatemachine reaches unlock state
+					locked <= 0;
 					state_toplevel <= UNLOCKED_TOPLEVEL;
 				end 
 			end
