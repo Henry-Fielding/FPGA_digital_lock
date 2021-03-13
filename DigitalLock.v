@@ -11,9 +11,12 @@
 
 module digitalLock #(
 	// declare parameters
+	parameter CLOCK_MHZ = 50000000,
+	parameter TIMEOUT = 10 * CLOCK_MHZ, // number of clock cycles for ten second timeout
+	parameter TIMEOUT_COUNTER_WIDTH = $clog2(TIMEOUT + 1),
 	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
 	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH, // bits required to store unlock code
-	parameter COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH + 1)
+	parameter ENTRY_COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH + 1)
 )(
 	// declare ports
 	input clock,
@@ -23,10 +26,11 @@ module digitalLock #(
 
 	
 	output reg locked,
+	output reg error,
 	
 	// testing outputs
-	output [PASSCODE_WIDTH-1:0] entry1,
-	output [COUNTER_WIDTH-1:0] entry_counter,
+	output [PASSCODE_WIDTH-1:0] entry,
+	output [ENTRY_COUNTER_WIDTH-1:0] entry_counter,
 	output state,
 	output [2:0] substate_unlocked,
 	output [1:0] substate_locked
@@ -36,16 +40,17 @@ module digitalLock #(
 //
 // local registers
 //	
-reg [COUNTER_WIDTH-1:0] entryLength;
-reg [PASSCODE_WIDTH-1:0] userEntry1;
-reg [PASSCODE_WIDTH-1:0] userEntry2;
+reg [ENTRY_COUNTER_WIDTH-1:0] entryLength;
+reg [PASSCODE_WIDTH-1:0] userEntry;
 reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'h8148;
+reg [TIMEOUT_COUNTER_WIDTH-1:0] timeoutCounter;
 
 //
 // local parameters
 //
-localparam ZERO_COUNTER = {COUNTER_WIDTH{1'b0}};
+localparam ZERO_ENTRY_COUNTER = {ENTRY_COUNTER_WIDTH{1'b0}};
 localparam ZERO_ENTRY = {PASSCODE_WIDTH{1'b0}};
+localparam ZERO_TIMEOUT_COUNTER = {TIMEOUT_COUNTER_WIDTH{1'b0}};
 	
 //
 // Declare statemachine registers and statenames	
@@ -99,6 +104,7 @@ always @(posedge clock or posedge reset) begin
 					locked <= 0;
 					state_toplevel <= UNLOCKED_TOPLEVEL;
 				end 
+				
 			end
 			
 			default state_toplevel <= UNLOCKED_TOPLEVEL;
@@ -115,26 +121,80 @@ end
 task unlocked_sub_statemachine () ;
 	case (state_unlocked)
 		READ1_UNLOCKED: begin
-			state_unlocked <= state_unlocked + 1'b1;
+			if (entryLength ==  PASSCODE_LENGTH) begin
+				// if all digits have been entered move to Check state
+				savedPasscode <= userEntry;
+				userEntry <= ZERO_ENTRY;
+				entryLength <= ZERO_ENTRY_COUNTER;
+				state_unlocked <= READ2_UNLOCKED;
+				
+			end else if (key) begin
+				// if a key is pressed shift in into the register in the 4 LSB
+				userEntry = {userEntry[PASSCODE_WIDTH-5:0], key};
+				entryLength <= entryLength + 1'b1;
+				error <= 1'b0;		// turn off previous errors once any button is pressed
+				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
+				state_unlocked <= READ1_UNLOCKED;
+				
+			end else if (timeoutCounter == TIMEOUT) begin
+				error <= 1'b1;
+				state_unlocked <= CLEAR_UNLOCKED;
+				
+			end else begin
+				timeoutCounter <= timeoutCounter + 1'b1;
+				state_unlocked <= READ1_UNLOCKED;
+			end
 		end 
 		
 		READ2_UNLOCKED : begin
-			state_unlocked <= state_unlocked + 1'b1;
+			if (entryLength ==  PASSCODE_LENGTH) begin
+				// if all digits have been entered move to Check state
+				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
+				state_unlocked <= CHECK_UNLOCKED;
+				
+			end else if (key) begin
+				// if a key is pressed shift in into the register in the 4 LSB
+				userEntry = {userEntry[PASSCODE_WIDTH-5:0], key};
+				entryLength <= entryLength + 1'b1;
+				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
+				state_unlocked <= READ2_UNLOCKED;
+				
+			end else if (timeoutCounter == TIMEOUT) begin
+				error <= 1'b1;
+				state_unlocked <= CLEAR_UNLOCKED;
+				
+			end else begin
+				timeoutCounter <= timeoutCounter + 1'b1;
+				state_unlocked <= READ2_UNLOCKED;
+				
+			end
 		end 
 		
 		CHECK_UNLOCKED : begin
-			state_unlocked <= state_unlocked + 1'b1;
+			if (userEntry == savedPasscode) begin
+				state_unlocked <= LOCK_UNLOCKED;
+				
+			end else begin 
+				error <= 1'b1;
+				state_unlocked <= CLEAR_UNLOCKED;
+				
+			end
 		end 
 		
 		LOCK_UNLOCKED : begin
-			state_unlocked <= state_unlocked + 1'b1;
+			state_unlocked <= CLEAR_UNLOCKED;
+			
 		end 
 		
 		CLEAR_UNLOCKED : begin
+			entryLength <= ZERO_ENTRY_COUNTER;
+			userEntry <= ZERO_ENTRY;
+			timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 			state_unlocked <= READ1_UNLOCKED;
+			
 		end 
 
-		default state_unlocked <= READ1_UNLOCKED;
+		default state_unlocked <= CLEAR_UNLOCKED;
 	
 	endcase
 
@@ -152,32 +212,46 @@ task locked_sub_statemachine () ;
 				
 			end else if (key) begin
 				// if a key is pressed shift in into the register in the 4 LSB
-				userEntry1 = {userEntry1[PASSCODE_WIDTH-5:0], key};
+				userEntry = {userEntry[PASSCODE_WIDTH-5:0], key};
 				entryLength <= entryLength + 1'b1;
+				error <= 1'b0;
+				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 				state_locked <= READ_LOCKED;
+		
+			end else if (timeoutCounter == TIMEOUT) begin
+				error <= 1'b1;
+				state_locked <= CLEAR_LOCKED;
 				
 			end else begin
+				timeoutCounter <= timeoutCounter + 1'b1;
 				state_locked <= READ_LOCKED;
-			end
+				
+			end		
 		end 
 		
 		CHECK_LOCKED : begin
-			if (userEntry1 == savedPasscode) begin
+			if (userEntry == savedPasscode) begin
 				state_locked <= UNLOCK_LOCKED;
+				
 			end else begin 
 				state_locked <= CLEAR_LOCKED;
+				error <= 1'b1;
+				
 			end
+			
 		end 
 		
 		UNLOCK_LOCKED : begin
 			state_locked <= CLEAR_LOCKED;
+			
 		end 
 		
 		CLEAR_LOCKED : begin
-			entryLength <= ZERO_COUNTER;
-			userEntry1 <= ZERO_ENTRY;
-			
+			entryLength <= ZERO_ENTRY_COUNTER;
+			userEntry <= ZERO_ENTRY;
+			timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 			state_locked <= READ_LOCKED;
+			
 		end 
 
 		default state_locked <= CLEAR_LOCKED;
@@ -191,7 +265,7 @@ endtask
 assign state = state_toplevel;
 assign substate_unlocked = state_unlocked;
 assign substate_locked = state_locked;
-assign entry1 = userEntry1;
+assign entry = userEntry;
 assign entry_counter = entryLength;
 
 endmodule 
