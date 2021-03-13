@@ -6,7 +6,7 @@
 //
 //Description
 //------------
-//Instatiates n buttonMonitor submodules to detect the rising edge of n buttons.
+//reads and stores the input code then checks value against a preset code.
 
 module pinCodeTester #(
 	// declare parameters
@@ -22,30 +22,33 @@ module pinCodeTester #(
 	input [CODE_LENGTH-1:0] pinCode,
 	
 	output reg unlock,
-	output reg [CODE_LENGTH-1:0] pinEntry
+	output reg [CODE_LENGTH-1:0] pinEntry,
+	output reg [COUNTER_WIDTH:0] digitCounter
 );
 
 // declare pin storage register
 //reg [CODE_LENGTH-1:0] pinEntry;
-reg [COUNTER_WIDTH-1:0] digitCounter;
+//reg [COUNTER_WIDTH-1:0] digitCounter;
 
 // declare local variable
-localparam ZERO = {CODE_LENGTH{1'b0}};
+localparam ZERO_INPUT = {CODE_LENGTH{1'b0}};
+localparam ZERO_COUNT = {(COUNTER_WIDTH-1){1'b0}};
 
 // declare state-machine register
-reg state;
+reg [2:0] state;
 
 // define state names
 localparam READ_STATE = 3'd0;
 localparam COMPARE_STATE = 3'd1;
-localparam UNLOCK_STATE = 3'd3;
-localparam CLEAR_STATE = 3'd4;
+localparam UNLOCK_STATE = 3'd2;
+localparam CLEAR_STATE = 3'd3;
 
 // define state machine outputs and transitions
 always @ (posedge clock or posedge reset) begin
 	if (reset) begin
 		unlock <= 1'b0;
-		pinEntry <= ZERO;
+		digitCounter <= ZERO_COUNT;
+		pinEntry <= ZERO_INPUT;
 		state <= READ_STATE;
 	end else begin
 		case (state)
@@ -55,9 +58,9 @@ always @ (posedge clock or posedge reset) begin
 				if (digitCounter ==  DIGITS) begin
 					state <= COMPARE_STATE;
 					
-				end else if (key == 4'b0001) begin
-					pinEntry = {pinEntry << 4, key};
-					digitCounter <= digitCounter + 1;
+				end else if (key) begin
+					pinEntry = {pinEntry[11:0], key};
+					digitCounter <= digitCounter + 1'b1;
 					state <= READ_STATE;
 					
 				end else begin
@@ -66,17 +69,24 @@ always @ (posedge clock or posedge reset) begin
 			end
 			
 			COMPARE_STATE : begin
-				state <= CLEAR_STATE;
+				unlock <= 1'b0;
+				
+				if (pinEntry == pinCode) begin
+					state <= UNLOCK_STATE;
+				end else begin 
+					state <= CLEAR_STATE;
+				end
 			end
-		
+			
 			UNLOCK_STATE : begin
-				unlock <= 1;
+				unlock <= 1'b1;	
 				state <= CLEAR_STATE;
 			end
 			
 			CLEAR_STATE : begin
-				unlock <= 0;
-				pinEntry <= ZERO;
+				unlock <= 1'b0;
+				digitCounter <= ZERO_COUNT;
+				pinEntry <= ZERO_INPUT;
 				state <= READ_STATE;
 			end
 			
