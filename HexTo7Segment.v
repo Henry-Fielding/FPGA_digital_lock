@@ -2,7 +2,7 @@
 //Hex to seven segment Encoder
 //-----------------------------
 //By: Henry Fielding
-//Date: 23/02/2021
+//Date: 14/03/2021
 //
 //Description
 //------------
@@ -14,27 +14,42 @@ module HexTo7Segment (
    input  	 	[3:0]	hex,
 	output reg 	[7:0]	segments
 );
-	// Case statement to convert input Hexvalve to seven segment display valve
-	always @ * begin
-		case (hex)
-			4'h0	:	segments = 8'b00111111;
-			4'h1	:	segments = 8'b00000110;
-			4'h2	:	segments = 8'b01011011;	
-			4'h3	:	segments = 8'b01001111;
-			4'h4	:	segments = 8'b01100110;
-			4'h5	:	segments = 8'b01101101;
-			4'h6	:	segments = 8'b01111101;
-			4'h7	:	segments = 8'b00000111;
-			4'h8	:	segments = 8'b01111111;
-			4'h9	:	segments = 8'b01101111;
-			4'hA	:	segments = 8'b01110111;
-			4'hB	:	segments = 8'b01111100;
-			4'hC	:	segments = 8'b00111001;
-			4'hD	:	segments = 8'b01011110;
-			4'hE	:	segments = 8'b01111001;
-			4'hF	:	segments = 8'b01110001;
-			default:	segments = 8'b01000000; // default case display - on 7seg display
-		endcase
-	end
+
+// define case names
+localparam DISPLAY_0 = 4'h0;
+localparam DISPLAY_1 = 4'h1;
+localparam DISPLAY_2 = 4'h2;
+localparam DISPLAY_3 = 4'h3;
+localparam DISPLAY_4 = 4'h4;
+
+localparam DISPLAY_E = 4'h5;
+localparam DISPLAY_r = 4'h6;
+localparam DISPLAY_o = 4'h7;
+localparam DISPLAY_L = 4'h8;
+localparam DISPLAY_c = 4'h9;
+localparam DISPLAY_U = 4'hA;
+localparam DISPLAY_n = 4'hB;
+
+	
+// Case statement to convert input Hexvalve to seven segment display valve
+always @ * begin
+	case (hex)
+		DISPLAY_0	:	segments = 8'b00111111;
+		DISPLAY_1	:	segments = 8'b00000110;
+		DISPLAY_2	:	segments = 8'b01011011;
+		DISPLAY_3	:	segments = 8'b01001111;
+		DISPLAY_4	:	segments = 8'b01100110;
+		
+		DISPLAY_E	:	segments = 8'b01111001;
+		DISPLAY_r	:	segments = 8'b01010000;
+		DISPLAY_o	:	segments = 8'b01011100;
+		DISPLAY_L	:	segments = 8'b00111000;
+		DISPLAY_c	:	segments = 8'b01011000;
+		DISPLAY_U	:	segments = 8'b00111110;
+		DISPLAY_n	:	segments = 8'b01010100;
+
+		default:	segments = 8'b01000000; // display -
+	endcase
+end
 
 endmodule

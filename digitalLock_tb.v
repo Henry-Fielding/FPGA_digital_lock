@@ -120,8 +120,9 @@ end
 //
 //$display("timeout testing");
 //reset();
-//
 //enter_passcode();
+//repeat () @(posedge clock)
+
 //repeat
 //// enter password
 //
