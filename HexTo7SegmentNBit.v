@@ -25,7 +25,7 @@ generate
 	// instantiate HexTo7Segment encoders for each display
 	for (i = 1; i <= DISPLAYS; i = i + 1) begin : encoder_loop
 		HexTo7Segment encoder (
-			.hex 			(hex		[(6 * i) - 1 -: 8]	),
+			.hex 			(hex		[(4 * i) - 1 -: 4]	),
 			.segments   (display	[(8 * i) - 1 -: 8]	)
 		);
 	end

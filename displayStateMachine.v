@@ -17,7 +17,6 @@ module displayStateMachine #(
 	input clock,
 	input reset,
 	
-	input locked,
 	input error,
 	input [PASSCODE_WIDTH-1:0] userEntry,
 	
@@ -44,11 +43,9 @@ HexTo7SegmentNBit #(
 //
 // Declare statemachine registers and statenames
 //
-reg [2:0] state;
-localparam INPUT_STATE = 3'd0;
-localparam ERROR_STATE = 3'd1;
-localparam LOCK_STATE = 3'd2;
-localparam UNLOCK_STATE = 3'd3;
+reg state;
+localparam INPUT_STATE = 1'd0;
+localparam ERROR_STATE = 2'd1;
 
 always @(posedge clock or posedge reset) begin
 	if (reset) begin
@@ -57,7 +54,7 @@ always @(posedge clock or posedge reset) begin
 		case (state)
 			INPUT_STATE : begin
 				if (!error) begin
-					hexInput <= {{(6-PASSCODE_LENGTH){4'hE}},userEntry};
+					hexInput <= {{(6-PASSCODE_LENGTH){4'hE}}, userEntry};
 					state <= INPUT_STATE;
 				end else begin
 					state <= ERROR_STATE;
@@ -73,6 +70,8 @@ always @(posedge clock or posedge reset) begin
 					state <= INPUT_STATE;
 				end
 			end
+			
+			default state <= INPUT_STATE;
 		endcase
 	end
 
