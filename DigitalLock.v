@@ -25,15 +25,7 @@ module digitalLock #(
 	input [3:0] key,
 	
 	output reg locked,
-	output reg error,
-	
-	// testing outputs
-	output [PASSCODE_WIDTH-1:0] entry,
-	output [ENTRY_COUNTER_WIDTH-1:0] entry_counter,
-	output state,
-	output [2:0] substate_unlocked,
-	output [1:0] substate_locked
-
+	output reg error
 );
 
 //
@@ -270,13 +262,5 @@ task locked_sub_statemachine () ;
 	endcase
 
 endtask
-
-
-//testing outputs
-assign state = state_toplevel;
-assign substate_unlocked = state_unlocked;
-assign substate_locked = state_locked;
-assign entry = userEntry;
-assign entry_counter = entryLength;
 
 endmodule 

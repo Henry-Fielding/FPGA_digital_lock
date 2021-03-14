@@ -27,12 +27,6 @@ reg [3:0] key;
 wire locked;
 wire error;
 
-wire [11:0] entry;
-wire [1:0] entry_counter;
-wire state;
-wire [2:0] substate_unlocked;
-wire [1:0] substate_locked;
-
 digitalLock #(
 	.PASSCODE_LENGTH	(PASSCODE_LENGTH	),
 	.CLOCK_FREQ 		(CLOCK_FREQ			)
@@ -44,22 +38,13 @@ digitalLock #(
 
 	
 	.locked	(locked	),
-	.error (error),
-	
-	
-	// testing only
-	.entry (entry),
-	.entry_counter (entry_counter),
-	.state	(state),
-	.substate_unlocked	(substate_unlocked),
-	.substate_locked		(substate_locked)
+	.error 	(error	)
 );
 
-//test bench variables 
+// test bench variables 
 integer i;
 integer j;
 integer random;
-integer password;
 
 reg [PASSCODE_MSB:0] Entry1;
 reg [PASSCODE_MSB:0] Entry2;
@@ -75,7 +60,7 @@ initial begin
 // unlocked state testing regime
 //
 $display("unlocked state testing");
-reset();						// return the device to a know state
+reset_dut();						// return the device to a know state
 randomise_passcode();	// generate a random passcode
 
 // test the device with the correct passcode
@@ -102,7 +87,7 @@ end
 // locked state testing regime
 //
 $display("locked state testing");
-reset();						// return device to known state
+reset_dut();						// return device to known state
 randomise_passcode();	// generate a random passcode
 
 enter_passcode();			// enter correct passcode twice to lock device
@@ -131,28 +116,28 @@ end
 //
 // timeout testing regime
 //
-$display("timeout testing");
-reset();
-
-enter_passcode();
-repeat
-// enter password
-
-// wait for timeout period
-
-// enter password
-
-// check if locked, if not then passed
-
-// lock device
-
-// enter password first half
-
-// wait for timeout
-
-// enter password	
-
-$stop
+//$display("timeout testing");
+//reset();
+//
+//enter_passcode();
+//repeat
+//// enter password
+//
+//// wait for timeout period
+//
+//// enter password
+//
+//// check if locked, if not then passed
+//
+//// lock device
+//
+//// enter password first half
+//
+//// wait for timeout
+//
+//// enter password	
+//
+//$stop
 
 end
 
@@ -231,7 +216,7 @@ endtask
 //
 // SYNCHRONOUS CLOCK LOGIC
 //
-task reset() ;
+task reset_dut() ;
 begin
 	// initialise in reset, clear reset after preset number of clock cycles
 	reset = 1'b1;
