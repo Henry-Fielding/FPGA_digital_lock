@@ -67,159 +67,75 @@ reg [PASSCODE_MSB:0] Entry2;
 localparam ZERO = {PASSCODE_LENGTH{1'b0}};
 localparam ONE = {{PASSCODE_LENGTH-1{1'b0}}, 1'b1};
 
-initial begin
-//$monitor("clock = %b \t i = %d \t key = %b", clock, i, key);
-repeat(5) @(posedge clock);
-	
-	
 //
-// unlocked state test
+// define test regime
+//
+initial begin
+//
+// unlocked state testing regime
 //
 $display("unlocked state testing");
+reset();						// return the device to a know state
+randomise_passcode();	// generate a random passcode
 
-// generate a random password of the set length
-for (i = 0; i < 4 * PASSCODE_LENGTH; i = i + 4) begin
-	// generate key press value and save in entry register
-	random = $urandom_range(PASSCODE_LENGTH-1, 0);	
-	Entry1[PASSCODE_MSB-i -: 4] = ONE << random;
+// test the device with the correct passcode
+enter_passcode();
+enter_passcode();
+autoverify_locked();
+if (locked) begin			// if unlocked relock so testing can continue
+		enter_passcode();
 end
 
-// Test the device with 10 randomly generated inputs and display device performance
+// test the device with 10 randomly generated inputs and display device performance
 for (i = 0; i <= 20; i = i + 1) begin
-	// enter the predetermined password onto the keypad
-	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-		@(posedge clock);
-		key = Entry1[PASSCODE_MSB-j -: 4];
-		@(posedge clock);
-		key = ZERO;
-	end
+	enter_passcode();			// enter the correct password then a randomly generated input and verify behaviour
+	enter_random();
+	autoverify_unlocked();
 	
-	repeat(5) @(posedge clock);
-	
-	// generate and input a random test input
-	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-		random = $urandom_range(PASSCODE_LENGTH-1, 0);	
-		Entry2[PASSCODE_MSB-j -: 4] = ONE << random;
-		
-		@(posedge clock);
-		key = ONE << random;
-		@(posedge clock);
-		key = ZERO;
-	end
-	
-	// wait a few clock cycles for statemachine
-	repeat(5) @(posedge clock);
-	
-	// compare module output to expected behaviour
-	if ((Entry1 == Entry2) && locked && !error) begin
-		$display("pass: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end else if	((Entry1 != Entry2) && !locked && error) begin
-		$display("pass: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end else begin
-		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end
-	
-	// if locked, unlock device so testing can continue
-	if (locked) begin
-	// enter the stored password
-		for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-			@(posedge clock);
-			key = Entry1[PASSCODE_MSB-j -: 4];
-			@(posedge clock);
-			key = ZERO;
-		end
-		
-		// wait a few clock cycles for statemachine
-		repeat(5) @(posedge clock);
+	if (locked) begin			// if locked, unlock device so testing can continue
+		enter_passcode();
 	end
 end
 
 
 //
-// locked state testing
+// locked state testing regime
 //
-
 $display("locked state testing");
+reset();						// return device to known state
+randomise_passcode();	// generate a random passcode
 
-// generate a new random password of the set length
-for (i = 0; i < 4 * PASSCODE_LENGTH; i = i + 4) begin
-	// generate key press value and save in entry register
-	random = $urandom_range(PASSCODE_LENGTH-1, 0);	
-	Entry1[PASSCODE_MSB-i -: 4] = ONE << random;
+enter_passcode();			// enter correct passcode twice to lock device
+enter_passcode();
+
+// test the device with the correct passcode
+enter_passcode();
+auto_verify();
+if (!locked) begin 			// if unlocked relock so testing can continue
+		enter_passcode();
+		enter_passcode();
 end
 
-
-// enter correct password twice to lock
-for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-		@(posedge clock);
-		key = Entry1[PASSCODE_MSB-j -: 4];
-		@(posedge clock);
-		key = ZERO;
-end
-repeat(5) @(posedge clock);
-
-for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-		@(posedge clock);
-		key = Entry1[PASSCODE_MSB-j -: 4];
-		@(posedge clock);
-		key = ZERO;
-end
-repeat(5) @(posedge clock);
-
-// Test the device with 10 randomly generated inputs and display device performance
+// Test the device with 10 randomly generated passcodes
 for (i = 0; i <= 20; i = i + 1) begin
+	enter_random();			// enter a randomly generated input and verify the device behaviour
+	autoverify_locked();
 	
-	// generate and input a random test input
-	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-		random = $urandom_range(PASSCODE_LENGTH-1, 0);	
-		Entry2[PASSCODE_MSB-j -: 4] = ONE << random;
-		
-		@(posedge clock);
-		key = ONE << random;
-		@(posedge clock);
-		key = ZERO;
-	end
-	
-	// wait a few clock cycles for statemachine
-	repeat(5) @(posedge clock);
-	
-	// compare module output to expected behaviour
-	if ((Entry1 == Entry2) && !locked && !error) begin
-		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end else if	((Entry1 != Entry2) && locked && error) begin
-		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end else begin
-		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
-	end
-	
-	// if unlocked, relock device so testing can continue
-	if (!locked) begin
-	// enter the stored password
-		for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-			@(posedge clock);
-			key = Entry1[PASSCODE_MSB-j -: 4];
-			@(posedge clock);
-			key = ZERO;
-		end
-		repeat(5) @(posedge clock);
-		
-		for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
-			@(posedge clock);
-			key = Entry1[PASSCODE_MSB-j -: 4];
-			@(posedge clock);
-			key = ZERO;
-		end
-		// wait a few clock cycles for statemachine
-		repeat(5) @(posedge clock);
+	if (!locked) begin		// if unlocked, relock device so testing can continue
+		enter_passcode();
+		enter_passcode();
 	end
 end
+
 	
 //
-// timeout testing
+// timeout testing regime
 //
+$display("timeout testing");
+reset();
 
-// unlock device
-
+enter_passcode();
+repeat
 // enter password
 
 // wait for timeout period
@@ -236,21 +152,93 @@ end
 
 // enter password	
 
+$stop
+
 end
 
+//
+// test regime tasks
+//
+task randomise_passcode() ;
+begin
+	// generate a random password of the set length
+	for (i = 0; i < 4 * PASSCODE_LENGTH; i = i + 4) begin
+		random = $urandom_range(3, 0);					// generate a random keypress value
+		Entry1[PASSCODE_MSB-i -: 4] = ONE << random;	// save keypress as onehot binary value in register
+	end
+end
+endtask
 
+task enter_passcode() ;
+begin 
+	// enter the stored password on input keys
+	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+		@(posedge clock);
+		key = Entry1[PASSCODE_MSB-j -: 4];
+		@(posedge clock);
+		key = ZERO;
+	end
+	
+	// wait a few clock cycles for statemachine
+	repeat(5) @(posedge clock);
+end
+endtask
 
+task enter_random();
+begin
+	// generate a random test input and enter on input keys
+	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+		random = $urandom_range(3, 0);					// generate a random keypress value
+		Entry2[PASSCODE_MSB-j -: 4] = ONE << random;	// save keypress as onehot binary value in register
+		
+		@(posedge clock);
+		key = ONE << random;
+		@(posedge clock);
+		key = ZERO;
+	end
+	
+	// wait a few clock cycles for statemachine
+	repeat(5) @(posedge clock);
+end
+endtask
 
+task autoverify_unlocked();
+begin
+	// compare unlocked state output to expected behaviour
+	if ((Entry1 == Entry2) && locked && !error) begin
+		$display("pass: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else if	((Entry1 != Entry2) && !locked && error) begin
+		$display("pass: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else begin
+		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end
+end
+endtask
+
+task autoverify_locked();
+begin
+	// compare locked state output to expected behaviour
+	if ((Entry1 == Entry2) && !locked && !error) begin
+		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else if	((Entry1 != Entry2) && locked && error) begin
+		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else begin
+		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end
+end
+endtask
 
 //
 // SYNCHRONOUS CLOCK LOGIC
 //
-initial begin
+task reset() ;
+begin
 	// initialise in reset, clear reset after preset number of clock cycles
 	reset = 1'b1;
 	repeat(RST_CYCLES) @(posedge clock);
 	reset = 1'b0;
 end
+endtask
 
 initial begin
 	// initialise clock to zero
@@ -265,13 +253,6 @@ always begin
 	#(HALF_CLOCK_PERIOD); 
 	clock = ~clock;
 	halfCycles = halfCycles + 1;
-
-	if (halfCycles == (2*SIMULATION_CYCLES)) begin
-		// reset the counter and end the simulation when all cycles complete
-		halfCycles = 0;
-		$stop;
-	
-	end
 end
 
 endmodule 
