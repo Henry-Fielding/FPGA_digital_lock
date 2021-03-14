@@ -15,7 +15,7 @@ module digitalLock_tb;
 parameter PASSCODE_LENGTH = 3; // number of digits in unlock code
 parameter PASSCODE_MSB = (4 * PASSCODE_LENGTH) - 1;
 parameter CLOCK_FREQ = 50000000;
-parameter RST_CYCLES = 2;
+parameter RST_CYCLES = 5;
 parameter SIMULATION_CYCLES = 1000;
 
 // testbench generated signals
@@ -66,9 +66,10 @@ randomise_passcode();	// generate a random passcode
 // test the device with the correct passcode
 enter_passcode();
 enter_passcode();
-autoverify_locked();
+Entry2 = Entry1;
+autoverify_unlocked();
 if (locked) begin			// if unlocked relock so testing can continue
-		enter_passcode();
+	enter_passcode();
 end
 
 // test the device with 10 randomly generated inputs and display device performance
@@ -95,7 +96,8 @@ enter_passcode();
 
 // test the device with the correct passcode
 enter_passcode();
-auto_verify();
+Entry2 = Entry1;
+autoverify_locked();
 if (!locked) begin 			// if unlocked relock so testing can continue
 		enter_passcode();
 		enter_passcode();
@@ -137,7 +139,7 @@ end
 //
 //// enter password	
 //
-//$stop
+$stop;
 
 end
 
@@ -163,9 +165,8 @@ begin
 		@(posedge clock);
 		key = ZERO;
 	end
-	
 	// wait a few clock cycles for statemachine
-	repeat(5) @(posedge clock);
+	repeat(10) @(posedge clock);
 end
 endtask
 
@@ -183,7 +184,7 @@ begin
 	end
 	
 	// wait a few clock cycles for statemachine
-	repeat(5) @(posedge clock);
+	repeat(10) @(posedge clock);
 end
 endtask
 
@@ -222,6 +223,7 @@ begin
 	reset = 1'b1;
 	repeat(RST_CYCLES) @(posedge clock);
 	reset = 1'b0;
+	repeat(RST_CYCLES) @(posedge clock);
 end
 endtask
 
