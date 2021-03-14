@@ -66,14 +66,6 @@ set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id pinCodeTeste
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME pinCodeTester_tb -section_id pinCodeTester_tb
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id DigitalLock_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME digitalLock_tb -section_id digitalLock_tb
-set_global_assignment -name VERILOG_FILE digitalLock_tb.v
-set_global_assignment -name VERILOG_FILE digitalLock.v
-set_global_assignment -name VERILOG_FILE buttonMonitor.v
-set_global_assignment -name VERILOG_FILE buttonMonitor_tb.v
-set_global_assignment -name VERILOG_FILE buttonMonitorNBit.v
-set_global_assignment -name VERILOG_FILE buttonMonitorNBit_tb.v
-set_global_assignment -name VERILOG_FILE pinCodeTester.v
-set_global_assignment -name VERILOG_FILE pinCodeTester_tb.v
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
@@ -83,3 +75,12 @@ set_global_assignment -name EDA_TEST_BENCH_FILE buttonMonitorNBit_tb.v -section_
 set_global_assignment -name EDA_TEST_BENCH_FILE pinCodeTester_tb.v -section_id pinCodeTester_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE digitalLock_tb.v -section_id digitalLock_tb
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name VERILOG_FILE HexTo7Segment.v
+set_global_assignment -name VERILOG_FILE digitalLock_tb.v
+set_global_assignment -name VERILOG_FILE digitalLock.v
+set_global_assignment -name VERILOG_FILE buttonMonitor.v
+set_global_assignment -name VERILOG_FILE buttonMonitor_tb.v
+set_global_assignment -name VERILOG_FILE buttonMonitorNBit.v
+set_global_assignment -name VERILOG_FILE buttonMonitorNBit_tb.v
+set_global_assignment -name VERILOG_FILE pinCodeTester.v
+set_global_assignment -name VERILOG_FILE pinCodeTester_tb.v
