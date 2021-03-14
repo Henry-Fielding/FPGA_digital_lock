@@ -134,6 +134,85 @@ for (i = 0; i <= 20; i = i + 1) begin
 	end
 end
 
+
+//
+// locked state testing
+//
+
+$display("locked state testing");
+
+// generate a new random password of the set length
+for (i = 0; i < 4 * PASSCODE_LENGTH; i = i + 4) begin
+	// generate key press value and save in entry register
+	random = $urandom_range(PASSCODE_LENGTH-1, 0);	
+	Entry1[PASSCODE_MSB-i -: 4] = ONE << random;
+end
+
+
+// enter correct password twice to lock
+for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+		@(posedge clock);
+		key = Entry1[PASSCODE_MSB-j -: 4];
+		@(posedge clock);
+		key = ZERO;
+end
+repeat(5) @(posedge clock);
+
+for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+		@(posedge clock);
+		key = Entry1[PASSCODE_MSB-j -: 4];
+		@(posedge clock);
+		key = ZERO;
+end
+repeat(5) @(posedge clock);
+
+// Test the device with 10 randomly generated inputs and display device performance
+for (i = 0; i <= 20; i = i + 1) begin
+	
+	// generate and input a random test input
+	for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+		random = $urandom_range(PASSCODE_LENGTH-1, 0);	
+		Entry2[PASSCODE_MSB-j -: 4] = ONE << random;
+		
+		@(posedge clock);
+		key = ONE << random;
+		@(posedge clock);
+		key = ZERO;
+	end
+	
+	// wait a few clock cycles for statemachine
+	repeat(5) @(posedge clock);
+	
+	// compare module output to expected behaviour
+	if ((Entry1 == Entry2) && !locked && !error) begin
+		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else if	((Entry1 != Entry2) && locked && error) begin
+		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end else begin
+		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end
+	
+	// if unlocked, relock device so testing can continue
+	if (!locked) begin
+	// enter the stored password
+		for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+			@(posedge clock);
+			key = Entry1[PASSCODE_MSB-j -: 4];
+			@(posedge clock);
+			key = ZERO;
+		end
+		repeat(5) @(posedge clock);
+		
+		for (j = 0; j < 4 * PASSCODE_LENGTH; j = j + 4) begin
+			@(posedge clock);
+			key = Entry1[PASSCODE_MSB-j -: 4];
+			@(posedge clock);
+			key = ZERO;
+		end
+		// wait a few clock cycles for statemachine
+		repeat(5) @(posedge clock);
+	end
+end
 	
 //
 // timeout testing
