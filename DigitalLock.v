@@ -25,14 +25,14 @@ module digitalLock #(
 	input [3:0] key,
 	
 	output reg locked,
-	output reg error
+	output reg error,
+	output reg [PASSCODE_WIDTH-1:0] userEntry
 );
 
 //
 // local registers
 //	
 reg [ENTRY_COUNTER_WIDTH-1:0] entryLength;
-reg [PASSCODE_WIDTH-1:0] userEntry;
 reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'h8148;
 reg [TIMEOUT_COUNTER_WIDTH-1:0] timeoutCounter;
 reg ready;
