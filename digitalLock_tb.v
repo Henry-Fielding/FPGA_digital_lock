@@ -12,11 +12,10 @@
 
 module digitalLock_tb;
 // declare parameters
-parameter PASSCODE_LENGTH = 3; // number of digits in unlock code
-parameter PASSCODE_MSB = (4 * PASSCODE_LENGTH) - 1;
 parameter CLOCK_FREQ = 50000000;
 parameter RST_CYCLES = 5;
-parameter SIMULATION_CYCLES = 1000;
+parameter PASSCODE_LENGTH = 3; // number of digits in unlock code
+parameter PASSCODE_MSB = (4 * PASSCODE_LENGTH) - 1;
 
 // testbench generated signals
 reg clock;
@@ -26,19 +25,20 @@ reg [3:0] key;
 // DUT output signals
 wire locked;
 wire error;
+wire [47:0] displays;
 
 digitalLock #(
-	.PASSCODE_LENGTH	(PASSCODE_LENGTH	),
-	.CLOCK_FREQ 		(CLOCK_FREQ			)
+	.CLOCK_FREQ 		(CLOCK_FREQ			),
+	.PASSCODE_LENGTH	(PASSCODE_LENGTH	)
 
 ) digitalLock_tb (
 	.clock	(clock	),
 	.reset	(reset	),
 	.key		(key		),
-
 	
-	.locked	(locked	),
-	.error 	(error	)
+	.locked		(locked	),
+	.error 		(error	),
+	.displays	(displays)
 );
 
 // test bench variables 
