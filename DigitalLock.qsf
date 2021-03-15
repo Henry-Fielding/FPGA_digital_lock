@@ -77,12 +77,6 @@ set_global_assignment -name EDA_TEST_BENCH_FILE digitalLock_tb.v -section_id dig
 set_global_assignment -name VERILOG_FILE HexTo7Segment.v
 set_global_assignment -name VERILOG_FILE digitalLock_tb.v
 set_global_assignment -name VERILOG_FILE digitalLock.v
-set_global_assignment -name VERILOG_FILE buttonMonitor.v
-set_global_assignment -name VERILOG_FILE buttonMonitor_tb.v
-set_global_assignment -name VERILOG_FILE buttonMonitorNBit.v
-set_global_assignment -name VERILOG_FILE buttonMonitorNBit_tb.v
-set_global_assignment -name VERILOG_FILE pinCodeTester.v
-set_global_assignment -name VERILOG_FILE pinCodeTester_tb.v
 set_global_assignment -name VERILOG_FILE HexTo7SegmentNBit.v
 set_global_assignment -name VERILOG_FILE displayStateMachine.v
 set_global_assignment -name VERILOG_FILE LockStateMachine.v
