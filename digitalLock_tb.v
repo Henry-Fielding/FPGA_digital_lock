@@ -6,32 +6,34 @@
 //
 //Description
 //------------
-// test bench form the Statemachine digital lock
+//synchronous autoverifying test bench to test the functionality of the Statemachine digital lock
 
 `timescale 1 ns/100 ps
 
 module digitalLock_tb;
 // declare parameters
-parameter CLOCK_FREQ = 50000000;
+parameter CLOCK_FREQ = 50;
 parameter RST_CYCLES = 5;
 parameter PASSCODE_LENGTH = 3; // number of digits in unlock code
 parameter PASSCODE_MSB = (4 * PASSCODE_LENGTH) - 1;
 
-// testbench generated signals
+// declare testbench generated signals
 reg clock;
 reg reset;
 reg [3:0] key;
 
-// DUT output signals
+// declare dut output signals
 wire locked;
 wire error;
 wire [47:0] displays;
 
+// Instantiate DUT
 digitalLock #(
+//define parameters
 	.CLOCK_FREQ 		(CLOCK_FREQ			),
 	.PASSCODE_LENGTH	(PASSCODE_LENGTH	)
-
-) digitalLock_tb (
+) digitalLock_dut (
+	// define connections
 	.clock	(clock	),
 	.reset	(reset	),
 	.key		(key		),
@@ -41,7 +43,7 @@ digitalLock #(
 	.displays	(displays)
 );
 
-// test bench variables 
+// declare test bench variables 
 integer i;
 integer j;
 integer random;
@@ -88,7 +90,7 @@ end
 // locked state testing regime
 //
 $display("locked state testing");
-reset_dut();						// return device to known state
+reset_dut();				// return device to known state
 randomise_passcode();	// generate a random passcode
 
 enter_passcode();			// enter correct passcode twice to lock device
@@ -98,7 +100,7 @@ enter_passcode();
 enter_passcode();
 Entry2 = Entry1;
 autoverify_locked();
-if (!locked) begin 			// if unlocked relock so testing can continue
+if (!locked) begin 		// if unlocked relock so testing can continue
 		enter_passcode();
 		enter_passcode();
 end
@@ -118,30 +120,16 @@ end
 //
 // timeout testing regime
 //
-//$display("timeout testing");
-//reset();
-//enter_passcode();
-//repeat () @(posedge clock)
+$display("timeout testing");
+reset_dut();
+randomise_passcode();	// generate a random passcode
 
-//repeat
-//// enter password
-//
-//// wait for timeout period
-//
-//// enter password
-//
-//// check if locked, if not then passed
-//
-//// lock device
-//
-//// enter password first half
-//
-//// wait for timeout
-//
-//// enter password	
-//
+enter_passcode();
+repeat (CLOCK_FREQ * 10 + 1) @(posedge clock); // wait for timeout
+enter_passcode();
+autoverify_timeout();
+
 $stop;
-
 end
 
 //
@@ -211,6 +199,18 @@ begin
 		$display("pass: \t entry 1 = %h \t entry 2 = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
 	end else begin
 		$display("fail: \t Password = %h \t Test entry = %h \t locked = %b \t error =", Entry1, Entry2, locked, error);
+	end
+end
+endtask
+
+
+task autoverify_timeout();
+begin
+	// compare unlocked state output to expected behaviour
+	if (!locked) begin
+		$display("pass");
+	end else begin
+		$display("fail");
 	end
 end
 endtask
