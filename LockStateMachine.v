@@ -11,10 +11,10 @@
 module LockStateMachine #(
 	// declare parameters
 	parameter CLOCK_FREQ = 50000000,
-	parameter TIMEOUT = 10 * CLOCK_FREQ, // number of clock cycles for ten second timeout
+	parameter TIMEOUT = 10 * CLOCK_FREQ,	// number of clock cycles for ten second timeout
 	parameter TIMEOUT_COUNTER_WIDTH = $clog2(TIMEOUT + 1),
 	
-	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
+	parameter PASSCODE_LENGTH = 4,			// number of digits in unlock code
 	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH, // bits required to store unlock code
 	parameter ENTRY_COUNTER_WIDTH =  $clog2(PASSCODE_LENGTH + 1)
 )(
@@ -30,7 +30,7 @@ module LockStateMachine #(
 
 //
 // local registers
-//	
+//
 reg [ENTRY_COUNTER_WIDTH-1:0] entryLength;
 reg [PASSCODE_WIDTH-1:0] savedPasscode = 16'h8148;
 reg [TIMEOUT_COUNTER_WIDTH-1:0] timeoutCounter;
@@ -44,27 +44,27 @@ localparam ZERO_ENTRY = {PASSCODE_WIDTH{1'b0}};
 localparam ZERO_TIMEOUT_COUNTER = {TIMEOUT_COUNTER_WIDTH{1'b0}};
 	
 //
-// Declare statemachine registers and statenames	
+// Declare statemachine registers and statenames
 //
-reg state_toplevel; // top level statemachine
+reg state_toplevel;			// top level statemachine
 localparam UNLOCKED_TOPLEVEL = 1'd0;
 localparam LOCKED_TOPLEVEL = 1'd1;
 
-reg [2:0] state_unlocked; // unlocked state sub-statemachine
+reg [2:0] state_unlocked;	// unlocked state sub-statemachine
 localparam READ1_UNLOCKED = 3'd0;
 localparam READ2_UNLOCKED = 3'd1;
 localparam CHECK_UNLOCKED = 3'd2;
 localparam LOCK_UNLOCKED = 3'd3;
 localparam CLEAR_UNLOCKED = 3'd4;
 
-reg [1:0] state_locked; // locked state sub-statemachine
+reg [1:0] state_locked;		// locked state sub-statemachine
 localparam READ_LOCKED = 2'd0;
 localparam CHECK_LOCKED = 2'd1;
 localparam UNLOCK_LOCKED = 2'd2;
 localparam CLEAR_LOCKED = 2'd3;
 
 //
-// toplevel statemachine
+// define toplevel statemachine behaviour
 //
 always @(posedge clock or posedge reset) begin
 	if (reset) begin 
@@ -77,8 +77,8 @@ always @(posedge clock or posedge reset) begin
 			UNLOCKED_TOPLEVEL : begin
 				locked <= 0;
 				
-				unlocked_sub_statemachine(); // call the locked state sub-statemachine
-				if (state_unlocked == LOCK_UNLOCKED) begin // move to locked state if substatemachine reaches lock state
+				unlocked_sub_statemachine();						// call the locked state sub-statemachine
+				if (state_unlocked == LOCK_UNLOCKED) begin	// move to locked state if substatemachine reaches lock state
 					locked <= 1;
 					state_toplevel <= LOCKED_TOPLEVEL;
 				end
@@ -87,8 +87,8 @@ always @(posedge clock or posedge reset) begin
 			LOCKED_TOPLEVEL : begin
 				locked <= 1;
 				
-				locked_sub_statemachine(); // call the locked state sub-statemachine
-				if (state_locked == UNLOCK_LOCKED) begin // move to unlocked state if substatemachine reaches unlock state
+				locked_sub_statemachine();						// call the locked state sub-statemachine
+				if (state_locked == UNLOCK_LOCKED) begin	// move to unlocked state if substatemachine reaches unlock state
 					locked <= 0;
 					state_toplevel <= UNLOCKED_TOPLEVEL;
 				end 
@@ -104,7 +104,7 @@ always @(posedge clock or posedge reset) begin
 end
 
 //
-// unlocked state sub-statemachine
+// define unlocked state sub-statemachine behaviour
 //
 task unlocked_sub_statemachine () ;
 	case (state_unlocked)
@@ -126,17 +126,19 @@ task unlocked_sub_statemachine () ;
 				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 				state_unlocked <= READ1_UNLOCKED;
 				
-			end else if (!key) begin
-				ready <= 1'b0;
-				
 			end else if (timeoutCounter == TIMEOUT) begin
+				// display error if timeout and clear entry
 				error <= 1'b1;
 				state_unlocked <= CLEAR_UNLOCKED;
 				
+			end else if (!key) begin
+				// once key is released ready for next input
+				ready <= 1'b0;
+				
 			end else begin
-				timeoutCounter <= timeoutCounter + 1'b1;
 				state_unlocked <= READ1_UNLOCKED;
 			end
+			timeoutCounter <= timeoutCounter + 1'b1;
 		end 
 		
 		READ2_UNLOCKED : begin
@@ -153,18 +155,20 @@ task unlocked_sub_statemachine () ;
 				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 				state_unlocked <= READ2_UNLOCKED;
 				
-			end else if (!key) begin
-				ready <= 1'b0;
-				
 			end else if (timeoutCounter == TIMEOUT) begin
+				// display error if timeout and clear entry
 				error <= 1'b1;
 				state_unlocked <= CLEAR_UNLOCKED;
 				
+			end else if (!key) begin
+				// once key is released ready for next input
+				ready <= 1'b0;
+				
 			end else begin
-				timeoutCounter <= timeoutCounter + 1'b1;
 				state_unlocked <= READ2_UNLOCKED;
 				
 			end
+			timeoutCounter <= timeoutCounter + 1'b1;
 		end 
 		
 		CHECK_UNLOCKED : begin
@@ -198,7 +202,7 @@ task unlocked_sub_statemachine () ;
 endtask
 
 //
-//	locked sub-statemachine
+// define locked sub-statemachine behaviour
 //
 task locked_sub_statemachine () ;
 	case (state_locked)
@@ -216,18 +220,20 @@ task locked_sub_statemachine () ;
 				timeoutCounter <= ZERO_TIMEOUT_COUNTER;
 				state_locked <= READ_LOCKED;
 				
-			end else if (!key) begin
-				ready <= 1'b0;
-		
 			end else if (timeoutCounter == TIMEOUT) begin
+				// display error if timeout and clear entry
 				error <= 1'b1;
 				state_locked <= CLEAR_LOCKED;
-				
+			
+			end else if (!key) begin
+				// once key is released ready for next input
+				ready <= 1'b0;
+			
 			end else begin
-				timeoutCounter <= timeoutCounter + 1'b1;
 				state_locked <= READ_LOCKED;
 				
-			end		
+			end
+			timeoutCounter <= timeoutCounter + 1'b1;
 		end 
 		
 		CHECK_LOCKED : begin

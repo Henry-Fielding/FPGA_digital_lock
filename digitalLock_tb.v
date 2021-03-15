@@ -58,78 +58,78 @@ localparam ONE = {{PASSCODE_LENGTH-1{1'b0}}, 1'b1};
 // define test regime
 //
 initial begin
-//
-// unlocked state testing regime
-//
-$display("unlocked state testing");
-reset_dut();						// return the device to a know state
-randomise_passcode();	// generate a random passcode
+	//
+	// unlocked state testing regime
+	//
+	$display("unlocked state testing");
+	reset_dut();						// return the device to a know state
+	randomise_passcode();	// generate a random passcode
 
-// test the device with the correct passcode
-enter_passcode();
-enter_passcode();
-Entry2 = Entry1;
-autoverify_unlocked();
-if (locked) begin			// if unlocked relock so testing can continue
+	// test the device with the correct passcode
 	enter_passcode();
-end
-
-// test the device with 10 randomly generated inputs and display device performance
-for (i = 0; i <= 20; i = i + 1) begin
-	enter_passcode();			// enter the correct password then a randomly generated input and verify behaviour
-	enter_random();
+	enter_passcode();
+	Entry2 = Entry1;
 	autoverify_unlocked();
-	
-	if (locked) begin			// if locked, unlock device so testing can continue
+	if (locked) begin			// if unlocked relock so testing can continue
 		enter_passcode();
 	end
-end
+
+	// test the device with 10 randomly generated inputs and display device performance
+	for (i = 0; i <= 20; i = i + 1) begin
+		enter_passcode();			// enter the correct password then a randomly generated input and verify behaviour
+		enter_random();
+		autoverify_unlocked();
+		
+		if (locked) begin			// if locked, unlock device so testing can continue
+			enter_passcode();
+		end
+	end
 
 
-//
-// locked state testing regime
-//
-$display("locked state testing");
-reset_dut();				// return device to known state
-randomise_passcode();	// generate a random passcode
+	//
+	// locked state testing regime
+	//
+	$display("locked state testing");
+	reset_dut();				// return device to known state
+	randomise_passcode();	// generate a random passcode
 
-enter_passcode();			// enter correct passcode twice to lock device
-enter_passcode();
+	enter_passcode();			// enter correct passcode twice to lock device
+	enter_passcode();
 
-// test the device with the correct passcode
-enter_passcode();
-Entry2 = Entry1;
-autoverify_locked();
-if (!locked) begin 		// if unlocked relock so testing can continue
-		enter_passcode();
-		enter_passcode();
-end
-
-// Test the device with 10 randomly generated passcodes
-for (i = 0; i <= 20; i = i + 1) begin
-	enter_random();			// enter a randomly generated input and verify the device behaviour
+	// test the device with the correct passcode
+	enter_passcode();
+	Entry2 = Entry1;
 	autoverify_locked();
-	
-	if (!locked) begin		// if unlocked, relock device so testing can continue
-		enter_passcode();
-		enter_passcode();
+	if (!locked) begin 		// if unlocked relock so testing can continue
+			enter_passcode();
+			enter_passcode();
 	end
-end
 
-	
-//
-// timeout testing regime
-//
-$display("timeout testing");
-reset_dut();
-randomise_passcode();	// generate a random passcode
+	// Test the device with 10 randomly generated passcodes
+	for (i = 0; i <= 20; i = i + 1) begin
+		enter_random();			// enter a randomly generated input and verify the device behaviour
+		autoverify_locked();
+		
+		if (!locked) begin		// if unlocked, relock device so testing can continue
+			enter_passcode();
+			enter_passcode();
+		end
+	end
 
-enter_passcode();
-repeat (CLOCK_FREQ * 10 + 1) @(posedge clock); // wait for timeout
-enter_passcode();
-autoverify_timeout();
+		
+	//
+	// timeout testing regime
+	//
+	$display("timeout testing");
+	reset_dut();
+	randomise_passcode();	// generate a random passcode
 
-$stop;
+	enter_passcode();
+	repeat (CLOCK_FREQ * 10 + 1) @(posedge clock); // wait for timeout
+	enter_passcode();
+	autoverify_timeout();
+
+	$stop;
 end
 
 //

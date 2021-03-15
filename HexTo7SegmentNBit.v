@@ -14,22 +14,21 @@ module HexTo7SegmentNBit #(
 	parameter HEX_MSB = (4 * DISPLAYS) - 1,
 	parameter DISPLAY_MSB = (8 * DISPLAYS) - 1
 )(
-   // Declare input and output ports
-   input  	 	[HEX_MSB:0]	hex,
-	output	 	[DISPLAY_MSB:0]	display
+	// declare ports
+	input		[HEX_MSB:0		]	hex,
+	output	[DISPLAY_MSB:0	]	display
 );
 
 genvar i;
 
 generate
-	// instantiate HexTo7Segment encoders for each display
+	// instantiate a HexTo7Segment encoders for each seven segment displays
 	for (i = 1; i <= DISPLAYS; i = i + 1) begin : encoder_loop
 		HexTo7Segment encoder (
+			// define connections
 			.hex 			(hex		[(4 * i) - 1 -: 4]	),
-			.segments   (display	[(8 * i) - 1 -: 8]	)
+			.segments	(display	[(8 * i) - 1 -: 8]	)
 		);
 	end
-
 endgenerate
-
 endmodule 

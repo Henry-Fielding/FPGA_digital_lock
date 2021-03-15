@@ -6,17 +6,16 @@
 //
 //Description
 //------------
-//Statemachine for the sevensegment display
+//tatemachine to display user input and error codes on the seven segment display bank
 
 module displayStateMachine #(
 	//declare parameters
-	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
+	parameter PASSCODE_LENGTH = 4, 					// digits in unlock code
 	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH // bits required to store unlock code
 )(
-	//declare inputs and outputs
+	//declare ports
 	input clock,
 	input reset,
-	
 	input error,
 	input [PASSCODE_WIDTH-1:0] userEntry,
 	
@@ -32,29 +31,32 @@ reg [23:0] hexInput;
 // instatiate submodules
 //
 HexTo7SegmentNBit #(
-	// declare parameters
+	// define parameters
 	.DISPLAYS	(6	)
 ) converter (
-   // Declare input and output ports
-   .hex 		(hexInput	),
+	// define connections
+	.hex		(hexInput	),
 	.display	(displays	)
 );
 
 //
-// Declare statemachine registers and statenames
+// declare statemachine registers and statenames
 //
 reg state;
 localparam INPUT_STATE = 1'd0;
-localparam ERROR_STATE = 2'd1;
+localparam ERROR_STATE = 1'd1;
 
+//
+// define state machine behaviour
+//
 always @(posedge clock or posedge reset) begin
 	if (reset) begin
-	
+		state <= INPUT_STATE;
 	end else begin
 		case (state)
 			INPUT_STATE : begin
 				if (!error) begin
-					hexInput <= {{(6-PASSCODE_LENGTH){4'hE}}, userEntry};
+					hexInput <= {{(6-PASSCODE_LENGTH){4'hE}}, userEntry};	// display user input
 					state <= INPUT_STATE;
 				end else begin
 					state <= ERROR_STATE;
@@ -64,7 +66,7 @@ always @(posedge clock or posedge reset) begin
 			
 			ERROR_STATE : begin
 				if (error) begin
-					hexInput <= 24'hFCDDED;
+					hexInput <= 24'hFCDDED;	// display "error"
 					state <= ERROR_STATE;
 				end else begin
 					state <= INPUT_STATE;
@@ -74,6 +76,5 @@ always @(posedge clock or posedge reset) begin
 			default state <= INPUT_STATE;
 		endcase
 	end
-
 end
 endmodule 

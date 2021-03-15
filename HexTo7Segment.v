@@ -7,12 +7,11 @@
 //Description
 //------------
 // A module to Encode a 1 bit hex value for display on a seven segment displays
-//
 
 module HexTo7Segment (
-    // Declare input and output ports
-   input  	 	[3:0]	hex,
-	output reg 	[7:0]	segments
+	// Declare ports
+	input			[3:0]	hex,
+	output reg	[7:0]	segments
 );
 
 // define case names
@@ -28,7 +27,6 @@ localparam DISPLAY_o = 4'hE;
 
 localparam DISPLAY_BLANK = 4'hF;
 
-	
 // Case statement to convert input Hexvalve to seven segment display valve
 always @ * begin
 	case (hex)
@@ -37,14 +35,13 @@ always @ * begin
 		DISPLAY_2	:	segments = 8'b01011011;
 		DISPLAY_3	:	segments = 8'b01001111;
 		DISPLAY_4	:	segments = 8'b01100110;
-		
+
 		DISPLAY_E	:	segments = 8'b01111001;
 		DISPLAY_r	:	segments = 8'b01010000;
 		DISPLAY_o	:	segments = 8'b01011100;
 		DISPLAY_BLANK	:	segments = 8'b00000000;
 
-		default:	segments = 8'b01000000; // display -
+		default:	segments = 8'b01000000; // display - character
 	endcase
 end
-
 endmodule

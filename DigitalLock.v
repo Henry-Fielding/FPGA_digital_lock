@@ -1,3 +1,4 @@
+//
 //Digital lock toplevel
 //------------------------
 //By: Henry Fielding
@@ -10,8 +11,8 @@
 module digitalLock #(
 	// declare parameters
 	parameter CLOCK_FREQ = 50000000,
-	parameter PASSCODE_LENGTH = 4, // number of digits in unlock code
-	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH // bits required to store unlock code
+	parameter PASSCODE_LENGTH = 4,					// number of digits in unlock code
+	parameter PASSCODE_WIDTH = 4*PASSCODE_LENGTH	// bits required to store unlock code
 )(
 	// declare ports
 	input clock,
@@ -31,14 +32,12 @@ wire [PASSCODE_WIDTH-1:0] userEntry;
 //
 // instantiate modules
 //
-
 LockStateMachine #(
-	// declare parameters
+	// define parameters
 	.CLOCK_FREQ 		(CLOCK_FREQ			),
 	.PASSCODE_LENGTH 	(PASSCODE_LENGTH	)
-
 ) lock (
-	// declare ports
+	// define connections
 	.clock		(clock	),
 	.reset		(reset	),
 	.key			(key		),
@@ -49,13 +48,12 @@ LockStateMachine #(
 );
 
 displayStateMachine #(
+	// define parameters
 	.PASSCODE_LENGTH (PASSCODE_LENGTH	)
-
 ) display (
-	//declare inputs and outputs
+	// define connections
 	.clock		(clock		),
 	.reset		(reset		),
-	
 	.error		(error		),
 	.userEntry	(userEntry	),
 	
