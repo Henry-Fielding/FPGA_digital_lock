@@ -68,7 +68,8 @@ localparam CLEAR_LOCKED = 2'd3;
 //
 always @(posedge clock or posedge reset) begin
 	if (reset) begin 
-		locked <= 0;
+		locked <= 1'b0;
+		error <= 1'b0;
 		ready <= 1'b0;
 		state_toplevel <= UNLOCKED_TOPLEVEL;
 	
@@ -134,6 +135,7 @@ task unlocked_sub_statemachine () ;
 			end else if (!key) begin
 				// once key is released ready for next input
 				ready <= 1'b0;
+				state_locked <= READ1_UNLOCKED;
 				
 			end else begin
 				state_unlocked <= READ1_UNLOCKED;
@@ -163,6 +165,7 @@ task unlocked_sub_statemachine () ;
 			end else if (!key) begin
 				// once key is released ready for next input
 				ready <= 1'b0;
+				state_locked <= READ2_UNLOCKED;
 				
 			end else begin
 				state_unlocked <= READ2_UNLOCKED;
@@ -228,7 +231,8 @@ task locked_sub_statemachine () ;
 			end else if (!key) begin
 				// once key is released ready for next input
 				ready <= 1'b0;
-			
+				state_locked <= READ_LOCKED;
+				
 			end else begin
 				state_locked <= READ_LOCKED;
 				

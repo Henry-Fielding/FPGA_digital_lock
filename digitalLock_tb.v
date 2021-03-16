@@ -14,7 +14,7 @@ module digitalLock_tb;
 // declare parameters
 parameter CLOCK_FREQ = 50;
 parameter RST_CYCLES = 5;
-parameter PASSCODE_LENGTH = 3; // number of digits in unlock code
+parameter PASSCODE_LENGTH = 6; // number of digits in unlock code
 parameter PASSCODE_MSB = (4 * PASSCODE_LENGTH) - 1;
 
 // declare testbench generated signals
