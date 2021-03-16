@@ -28,7 +28,7 @@ The included files and project heirarchy are as follows
 |--------------------------|--------------------------------------|
 |hexTo7Segment.v				| submodule containing the 1 bit wide 7 segment encoder module - instantiated in hexTo7SegmentNBit.v	|
 
-# test benches
+# Test benches
 
 | Filename 						| Descriptions                 			|
 |--------------------------|--------------------------------------|
